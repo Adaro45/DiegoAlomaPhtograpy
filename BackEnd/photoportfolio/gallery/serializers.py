@@ -11,26 +11,31 @@ class ImageSerializer(serializers.ModelSerializer):
         read_only_fields = ['creation_date']
 
     def validate_image(self, value):
-        # Procesar la imagen antes de validación
         img = PilImage.open(value)
         
-        # Convertir a RGB si es PNG con canal alpha
-        if img.mode in ('RGBA', 'LA'):
-            background = PilImage.new('RGB', img.size, (255, 255, 255))
-            background.paste(img, mask=img.split()[-1])
-            img = background
+        # Convertir modos no compatibles con JPEG
+        if img.mode in ('RGBA', 'LA', 'P'):
+            if img.mode == 'P':
+                img = img.convert('RGB')
+            else:
+                background = PilImage.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
 
-        # Redimensionar manteniendo aspect ratio
+        # Asegurar modo RGB para JPEG
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Redimensionar
         max_size = (1920, 1080)
         img.thumbnail(max_size, PilImage.LANCZOS)
         
-        # Optimizar y guardar en buffer
+        # Optimizar
         output = BytesIO()
         img.save(output, format='JPEG', quality=85, optimize=True)
         output.seek(0)
         
-        # Reemplazar el archivo original con el optimizado
         value.file = output
-        value.name = value.name.split('.')[0] + '.jpg'  # Cambiar extensión si era PNG
+        value.name = f"{value.name.split('.')[0]}.jpg"
         
         return value
