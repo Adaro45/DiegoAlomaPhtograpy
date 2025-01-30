@@ -5,9 +5,10 @@ from io import BytesIO
 import sys
 
 class ImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
     class Meta:
         model = Image
-        fields = ['id', 'title', 'image', 'category', 'creation_date']
+        fields = ['id', 'title', 'image','image_url', 'category', 'creation_date']
         read_only_fields = ['creation_date']
 
     def validate_image(self, value):
@@ -39,3 +40,8 @@ class ImageSerializer(serializers.ModelSerializer):
         value.name = f"{value.name.split('.')[0]}.jpg"
         
         return value
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None

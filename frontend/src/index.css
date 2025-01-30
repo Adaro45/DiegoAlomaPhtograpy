@@ -1,0 +1,21 @@
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --text-color: #333;
+  --background-light: #f5f6fa;
+  --box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  --border-radius: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--background-light);
+  color: var(--text-color);
+}
+
+@media (max-width: 768px) {
+  :root {
+    font-size: 14px;
+  }
+}

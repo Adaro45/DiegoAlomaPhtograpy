@@ -7,11 +7,11 @@ from .serializers import ImageSerializer
 class ImageListCreateView(APIView):
     def get(self, request):
         images = Image.objects.all().order_by('-creation_date')
-        serializer = ImageSerializer(images, many=True)
+        serializer = ImageSerializer(images, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = ImageSerializer(data=request.data)
+        serializer = ImageSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
