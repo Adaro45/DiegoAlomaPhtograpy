@@ -31,30 +31,41 @@ const ImageFormPage = () => {
       const formData = new FormData();
       formData.append('title', values.title);
       formData.append('category', values.category);
+      
+      // Manejar imagen existente vs nueva
       if (values.image instanceof File) {
         formData.append('image', values.image);
+      } else if (!id) {  // Requerida solo para creación
+        throw new Error('La imagen es requerida');
       }
-
+  
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRFToken': getCookie('csrftoken')  // Si usas CSRF
+        }
+      };
+  
       if (id) {
-        await api.put(`/images/${id}/`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        await api.put(`/images/${id}/`, formData, config);  // Usar PATCH
       } else {
-        await api.post('/images/', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        await api.post('/images/', formData, config);
       }
       navigate('/');
     } catch (error) {
-      console.error('Error saving image:', error);
+      console.error('Error saving image:', error.response?.data || error);
     } finally {
       setSubmitting(false);
     }
   };
+  
+  // Función auxiliar para CSRF (si es necesario)
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  };
+  
 
   return (
     <div className="form-page">

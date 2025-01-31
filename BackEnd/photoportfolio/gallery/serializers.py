@@ -41,7 +41,11 @@ class ImageSerializer(serializers.ModelSerializer):
         
         return value
     def get_image_url(self, obj):
-        request = self.context.get('request')
         if obj.image:
-            return request.build_absolute_uri(obj.image.url)
+            return self.context['request'].build_absolute_uri(obj.image.url)
         return None
+    def update(self, instance, validated_data):
+        # Elimina la imagen anterior si se sube una nueva
+        if 'image' in validated_data and instance.image:
+            instance.image.delete(save=False)
+        return super().update(instance, validated_data)
