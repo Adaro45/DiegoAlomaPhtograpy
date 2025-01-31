@@ -6,8 +6,17 @@ from .serializers import ImageSerializer
 from django.http import Http404
 class ImageListCreateView(APIView):
     def get(self, request):
-        images = Image.objects.all().order_by('-creation_date')
-        serializer = ImageSerializer(images, many=True, context={'request': request})
+        category = request.query_params.get('category', None)
+        title = request.query_params.get('title', None)
+        
+        queryset = Image.objects.all().order_by('-creation_date')
+        
+        if category:
+            queryset = queryset.filter(category=category)
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+            
+        serializer = ImageSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
