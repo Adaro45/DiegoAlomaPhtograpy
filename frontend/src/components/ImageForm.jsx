@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import api from "../services/api";
+// import api from "../services/api";
 import "../App.css";
 const categoryOptions = [
   { value: "wedding", label: "Bodas" },

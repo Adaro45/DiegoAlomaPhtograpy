@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiTrash2, FiEdit } from 'react-icons/fi';
+import { VscTrash, VscEdit } from 'react-icons/vsc';
 import '../App.css';
 
 const ImageCard = ({ image, onDelete }) => {
@@ -12,14 +12,14 @@ const ImageCard = ({ image, onDelete }) => {
         className="thumbnail"
       />
       <div className="card-content">
-        <h3>{image.title}</h3>
-        <span className="category-badge">{image.category}</span>
+        <h3 className='card-title'>{image.title}</h3>
         <div className="card-actions">
+        <span className="category-badge">{image.category}</span>
           <button onClick={() => onDelete(image.id)} className="btn-danger">
-            <FiTrash2 />
+            <VscTrash />
           </button>
           <Link to={`/images/${image.id}/edit`} className="btn-edit">
-            <FiEdit />
+            <VscEdit />
           </Link>
         </div>
       </div>
