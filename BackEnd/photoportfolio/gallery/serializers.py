@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from .models import Image
 from PIL import Image as PilImage
 from io import BytesIO
@@ -12,9 +13,10 @@ class ImageSerializer(serializers.ModelSerializer):
         read_only_fields = ['creation_date']
 
     def validate_image(self, value):
+        # Abrir la imagen original
         img = PilImage.open(value)
         
-        # Convertir modos no compatibles con JPEG
+        # Convertir modos no compatibles
         if img.mode in ('RGBA', 'LA', 'P'):
             if img.mode == 'P':
                 img = img.convert('RGB')
@@ -22,24 +24,37 @@ class ImageSerializer(serializers.ModelSerializer):
                 background = PilImage.new('RGB', img.size, (255, 255, 255))
                 background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
                 img = background
-
-        # Asegurar modo RGB para JPEG
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-
+        
         # Redimensionar
         max_size = (1920, 1080)
         img.thumbnail(max_size, PilImage.LANCZOS)
         
-        # Optimizar
+        # Crear buffer de salida
         output = BytesIO()
-        img.save(output, format='JPEG', quality=85, optimize=True)
+        
+        # Determinar formato y parámetros
+        original_format = value.name.split('.')[-1].lower() if value.name else 'jpeg'
+        format = 'JPEG' if original_format in ['jpg', 'jpeg'] else 'PNG'
+        
+        # Guardar imagen procesada
+        img.save(output, format=format, quality=85, optimize=True)
         output.seek(0)
         
-        value.file = output
-        value.name = f"{value.name.split('.')[0]}.jpg"
+        # Crear nuevo archivo con nombre original
+        original_name = value.name.split('.')[0] if value.name else 'processed_image'
+        new_name = f"{original_name}.{format.lower()}"
         
-        return value
+        # Crear InMemoryUploadedFile con atributo name
+        new_file = InMemoryUploadedFile(
+            file=output,
+            field_name='image',
+            name=new_name,
+            content_type=f'image/{format.lower()}',
+            size=sys.getsizeof(output),
+            charset=None
+        )
+        
+        return new_file
     def get_image_url(self, obj):
         if obj.image:
             return self.context['request'].build_absolute_uri(obj.image.url)

@@ -74,12 +74,12 @@ const ImageForm = ({ initialValues, onSubmit }) => {
               className="error-message"
             />
 
+          </div>
             {preview && (
               <div className="image-preview">
                 <img src={preview} alt="Vista previa" />
               </div>
             )}
-          </div>
 
           <button type="submit" disabled={isSubmitting} className="btn-primary">
             {isSubmitting ? "Guardando..." : "Guardar Imagen"}
