@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from .models import Image
+from .models import Image, Slideshow, SlideshowImage
 from PIL import Image as PilImage
 from io import BytesIO
 import sys
@@ -64,3 +64,42 @@ class ImageSerializer(serializers.ModelSerializer):
         if 'image' in validated_data and instance.image:
             instance.image.delete(save=False)
         return super().update(instance, validated_data)
+class SlideshowSerializer(serializers.ModelSerializer):
+    images = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Image.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = Slideshow
+        fields = ['id', 'name', 'images', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def create(self, validated_data):
+        images = validated_data.pop('images', [])
+        slideshow = Slideshow.objects.create(**validated_data)
+        
+        for order, image in enumerate(images):
+            SlideshowImage.objects.create(
+                slideshow=slideshow,
+                image=image,
+                order=order
+            )
+        
+        return slideshow
+
+    def update(self, instance, validated_data):
+        images = validated_data.pop('images', None)
+        instance = super().update(instance, validated_data)
+        
+        if images is not None:
+            instance.slideshowimage_set.all().delete()
+            for order, image in enumerate(images):
+                SlideshowImage.objects.create(
+                    slideshow=instance,
+                    image=image,
+                    order=order
+                )
+        
+        return instance

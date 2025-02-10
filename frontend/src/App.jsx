@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ImageList from './pages/ImageList';  // Asegúrate que la ruta sea correcta
 import ImageFormPage from './pages/ImageFormPage';
 import PreviewImage from './pages/PreviewImage';
+import SlideshowBuilder from './pages/SlideshowBuilder';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/images/new" element={<ImageFormPage />} />
         <Route path="/images/:id/edit" element={<ImageFormPage />} />
         <Route path="/images/:id/preview" element={<PreviewImage />} />
+        <Route path="/slideshow" element={<PreviewImage />} />
       </Routes>
     </Router>
   );
